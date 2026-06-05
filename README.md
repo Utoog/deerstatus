@@ -1,0 +1,3 @@
+# deerstatus
+
+Usage: `./deerstatus IPADDRESS`
