@@ -16,14 +16,25 @@
 #define RECV_TIMEOUT    1
 #define PING_SLEEP_RATE 1000000
 
-struct ping_pkt {
+struct ping_socket_t
+{
+    int sockfd;
+    const char *ip_address;
+    struct sockaddr_in addr_con;
+} prv_ping_socket;
+
+struct ping_pkt
+{
     struct icmphdr hdr;
     char msg[PING_PKG_S - sizeof(struct icmphdr)];
 };
 
-static const char *ip_address_str = NULL;
+struct ping_socket_t *get_psocket_instance(void)
+{
+    return &prv_ping_socket;
+}
 
-unsigned short checksum(void *b, int len)
+static unsigned short checksum(void *b, int len)
 {
     unsigned short *buf = b;
     unsigned int sum = 0;
@@ -39,7 +50,7 @@ unsigned short checksum(void *b, int len)
     return result;
 }
 
-int send_ping(int ping_sockfd, struct sockaddr_in *ping_addr)
+static int send_ping(int ping_sockfd, struct sockaddr_in *ping_addr)
 {
     int ttl_val = 64;
     unsigned int i = 0;
@@ -101,40 +112,50 @@ int send_ping(int ping_sockfd, struct sockaddr_in *ping_addr)
     return status;
 }
 
-unsigned int get_ping_status(void)
+int ping_init(void)
 {
-    int sockfd;
-    struct sockaddr_in addr_con;
-    int ping_status = 0;
-
-    addr_con.sin_family = AF_INET;
-    int status = inet_pton(AF_INET, ip_address_str, &addr_con.sin_addr);
+    struct ping_socket_t *pdev = get_psocket_instance();
+    pdev->addr_con.sin_family = AF_INET;
+    int status = inet_pton(AF_INET, pdev->ip_address, &pdev->addr_con.sin_addr);
     if (status == 0)
     {
         puts("ip string is not valid!");
-        return ping_status;
+        return 1;
     }
     else if (status < 0)
     {
         printf("ip converting error: %d", errno);
-        return ping_status;
+        return 1;
     }
 
-    sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (sockfd < 0)
+    pdev->sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (pdev->sockfd < 0)
     {
         printf("Socket file descriptor not received: errno: %d\n", errno);
-        return ping_status;
+        return 1;
     }
+    return 0;
+}
 
-    ping_status = send_ping(sockfd, &addr_con);
-
-    close(sockfd);
-
-    return ping_status;
+unsigned int get_ping_status(void)
+{
+    struct ping_socket_t *pdev = get_psocket_instance();
+    if (pdev->sockfd == 0)
+    {
+        puts("ping socket isn't initialized!");
+        return 0;
+    }
+    return send_ping(pdev->sockfd, &pdev->addr_con);
 }
 
 void ping_set_ip_address(const char *ip_address)
 {
-    ip_address_str = ip_address;
+    struct ping_socket_t *pdev = get_psocket_instance();
+    pdev->ip_address = ip_address;
+}
+
+void ping_close(void)
+{
+    struct ping_socket_t *pdev = get_psocket_instance();
+    close(pdev->sockfd);
 }
