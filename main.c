@@ -5,6 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define PROGRAM_NAME "deerstatus"
+#define PROGRAM_MAJOR   1
+#define PROGRAM_MINOR   1
+#define PROGRAM_PATCH   0
+
 void program_exit(void)
 {
     puts("Closing server");
@@ -29,6 +34,7 @@ void print_help(const char *program_name)
 
 void parse_args(int argc, char **argv)
 {
+    printf("%s v%d.%d.%d\n", PROGRAM_NAME, PROGRAM_MAJOR, PROGRAM_MINOR, PROGRAM_PATCH);
     if (argc < 2)
         print_help(argv[0]);
 
