@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #define HTTPSERVER_IMPL
 #include "httpserver.h/httpserver.h"
 #include "ping.h"
@@ -19,7 +20,7 @@ static server_t prv_server =
     .server_port = DEFAULT_SERVER_PORT
 };
 
-server_t *get_server_instance(void)
+static server_t *get_server_instance(void)
 {
     return &prv_server;
 }
@@ -36,7 +37,7 @@ handle_404(struct http_request_s *request)
     http_request_free_buffer(request);
 }
 
-void handle_status(struct http_request_s *request)
+static void handle_status(struct http_request_s *request)
 {
     int ping_status = get_ping_status();
     unsigned char *response_body = ping_status ? deer_running : deer_sleeping;

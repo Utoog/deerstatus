@@ -1,6 +1,7 @@
 #include "server.h"
 #include "ping.h"
 #include <getopt.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,6 +9,11 @@ void program_exit(void)
 {
     puts("Closing server");
     ping_close();
+}
+
+void signal_handler(int sig)
+{
+    exit(sig);
 }
 
 void print_help(const char *program_name)
@@ -68,8 +74,10 @@ int main(int argc, char **argv)
     if ((status = ping_init()) != 0)
         return status;
 
+    signal(SIGINT, signal_handler);
     atexit(program_exit);
 
+    if (ping_start() != 0) return 1;
     server_start();
     return 0;
 }
