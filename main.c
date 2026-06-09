@@ -7,7 +7,7 @@
 
 #define PROGRAM_NAME "deerstatus"
 #define PROGRAM_MAJOR   1
-#define PROGRAM_MINOR   1
+#define PROGRAM_MINOR   2
 #define PROGRAM_PATCH   0
 
 void program_exit(void)
