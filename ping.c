@@ -94,6 +94,7 @@ static void *ping_polling(void *ptr)
         if (sendto(pdev->sockfd, &pckt, sizeof(pckt), 0, (struct sockaddr *)&pdev->addr_con, sizeof(pdev->addr_con)) <= 0)
         {
             printf("Ping packet sending failed: error %d\n", errno);
+            atomic_store(&pdev->ping_status, 0);
             continue;
         }
 
@@ -101,6 +102,7 @@ static void *ping_polling(void *ptr)
         if (recvfrom(pdev->sockfd, rbuffer, sizeof(rbuffer), 0, (struct sockaddr *)&r_addr, &addr_len) <= 0)
         {
             puts("Packet receive failed!\n");
+            atomic_store(&pdev->ping_status, 0);
             continue;
         }
 
@@ -111,6 +113,7 @@ static void *ping_polling(void *ptr)
         if (!(recv_hdr->type == 0 && recv_hdr->code == 0))
         {
             printf("Error... Packet received with ICMP type %d code %d\n", recv_hdr->type, recv_hdr->code);
+            atomic_store(&pdev->ping_status, 0);
         }
         else
         {
