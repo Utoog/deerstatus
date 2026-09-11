@@ -5,7 +5,7 @@ CURDIR=$(dirname $0)
 ICONB64=$(base64 -w0 ${CURDIR}/res/favicon.ico)
 
 gendeerheader() {
-    DEERB64=$(base64 -w0 ${CURDIR}/res/deer_$1.gif)
+    DEER=$(cat ${CURDIR}/res/deer_$1.txt)
 
     cat << EOF | xxd -i -n deer_$1 > deer_$1.c
 <!DOCTYPE html>
@@ -21,15 +21,19 @@ gendeerheader() {
             margin: 0;
         }
 
-        img {
+        .ascii {
+            color: white;
+            font-family: monospace;
+            white-space: pre;
             max-width: 90%;
-            max-height: 90vh;
-            object-fit: contain;
+            overflow-x: auto;
         } </style>
     <title>deer status</title>
   </head>
   <body>
-    <img alt='deer' src='data:image/gif;base64,${DEERB64}'/>
+    <div class='ascii'>
+${DEER}
+    </div>
   </body>
 </html>
 EOF
